@@ -1,0 +1,33 @@
+# Server port
+server:
+  port: 8080
+
+api-version: V0.1
+url-configuration:
+  baseUrl: http://localhost:8080/
+
+# Spring Data Source Configuration (H2 in-memory database)
+spring:
+# Spring Thymeleaf Configuration (if you decide to use Thymeleaf in the future)
+# thymeleaf:
+#   prefix: classpath:/templates/
+#   suffix: .html
+#   cache: false # Disable template caching during development
+
+# Spring DevTools Configuration (optional)
+# devtools:
+#   restart:
+#     enabled: true
+#   livereload:
+#     enabled: true
+
+# Logging Configuration (optional)
+# logging:
+#   level:
+#     root: INFO
+#     org.springframework: INFO
+
+# Security Configuration (if you decide to add Spring Security in the future)
+# security:
+#   basic:
+#     enabled: false
