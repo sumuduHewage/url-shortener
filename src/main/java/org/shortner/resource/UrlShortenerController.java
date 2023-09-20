@@ -24,37 +24,38 @@ public class UrlShortenerController {
     }
 
     @PostMapping("/shorten-url")
-    public ResponseEntity<String> shortenUrl(@RequestBody UrlInformationDTO urlInformationDTO) {
+    public ResponseEntity<UrlInformationDTO> shortenUrl(@RequestBody UrlInformationDTO urlInformationDTO) {
         String longUrl = urlInformationDTO.getLongUrl();
+
         if (longUrl == null || longUrl.trim().isEmpty()) {
             logger.debug("Url not found : {}", CommonConstants.URL_NOT_FOUND);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CommonConstants.URL_NOT_FOUND);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new UrlInformationDTO());
         }
 
         if (!UrlValidator.isValid(longUrl)) {
             logger.debug("Invalid url : {}", CommonConstants.INVALID_URL_FORMAT);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CommonConstants.INVALID_URL_FORMAT);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new UrlInformationDTO());
         }
 
-        String shortenUrl = urlShortenerService.shortenUrl(longUrl);
-        return ResponseEntity.ok().body(shortenUrl);
+        UrlInformationDTO modifiedUrlInformation = urlShortenerService.shortenUrl(longUrl);
+        return ResponseEntity.ok().body(modifiedUrlInformation);
     }
 
     @PostMapping("/expand-url")
-    public ResponseEntity<String> expandUrl(@RequestBody UrlInformationDTO urlInformationDTO) {
+    public ResponseEntity<UrlInformationDTO> expandUrl(@RequestBody UrlInformationDTO urlInformationDTO) {
         String shortUrl = urlInformationDTO.getShortUrl();
 
         if (shortUrl == null || shortUrl.trim().isEmpty()) {
             logger.debug("url not found : {}", CommonConstants.URL_IS_EMPTY);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CommonConstants.URL_IS_EMPTY);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new UrlInformationDTO());
         }
 
         if (!UrlValidator.isValid(shortUrl)) {
             logger.debug("Invalid url : {}", CommonConstants.INVALID_URL_FORMAT);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(CommonConstants.INVALID_URL_FORMAT);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new UrlInformationDTO());
         }
 
-        String longUrl = urlShortenerService.expandUrl(shortUrl);
-        return ResponseEntity.ok().body(longUrl);
+        UrlInformationDTO modifiedUrlInformation = urlShortenerService.expandUrl(shortUrl);
+        return ResponseEntity.ok().body(modifiedUrlInformation);
     }
 }
