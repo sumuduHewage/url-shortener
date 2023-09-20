@@ -23,9 +23,10 @@
         <java.version>1.8</java.version>
         <mockito.version>4.9.0</mockito.version>
         <spring-boot.version>2.7.5</spring-boot.version>
+        <mapstruct.version>1.4.2.Final</mapstruct.version>
+        <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
         <junit-jupiter.version>5.9.1</junit-jupiter.version>
         <logback.version>1.2.11</logback.version>
-<!--        <spring-fox-start.version>3.0.0</spring-fox-start.version>-->
     </properties>
 
     <dependencies>
@@ -92,14 +93,44 @@
             <version>${logback.version}</version>
         </dependency>
 
-        <!-- swagger -->
+        <!--JPA-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
 
-        <!--<dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-boot-starter</artifactId>
-            <version>${spring-fox-start.version}</version>
-        </dependency>-->
+        <!--MYSQL-->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+        </dependency>
+
+        <!--Mapper-->
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+            <version>${mapstruct.version}</version>
+        </dependency>
 
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler-plugin.version}</version>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct-processor</artifactId>
+                            <version>${mapstruct.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

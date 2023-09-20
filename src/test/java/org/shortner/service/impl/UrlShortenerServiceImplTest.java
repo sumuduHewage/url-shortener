@@ -3,65 +3,108 @@ package org.shortner.service.impl;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.shortner.configuration.ApplicationConfiguration;
+import org.shortner.exception.InvalidURLException;
+import org.shortner.model.UrlMappingDTO;
+import org.shortner.model.entity.UrlMapping;
+import org.shortner.repository.UrlMappingRepository;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
 class UrlShortenerServiceImplTest {
 
+    @InjectMocks
     private UrlShortenerServiceImpl urlShortenerService;
 
     @Mock
     private ApplicationConfiguration applicationConfiguration;
 
+    @Mock
+    private UrlMappingRepository urlMappingRepository;
+
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
-        urlShortenerService = new UrlShortenerServiceImpl(applicationConfiguration);
+        MockitoAnnotations.initMocks(this);
+        urlShortenerService = new UrlShortenerServiceImpl(applicationConfiguration, urlMappingRepository);
     }
 
     @Test
-    void testShortenAndExpandUrl() {
-        // Mock the applicationConfiguration to return a base URL
-        when(applicationConfiguration.getBaseUrl()).thenReturn("http://localhost:8080/");
+    void testShortenUrlSuccess() {
+        when(applicationConfiguration.getBaseUrl()).thenReturn("http://example.com/");
+        when(urlMappingRepository.findByOriginalUrl(any())).thenReturn(null);
 
-        String longUrl = "https://www.example.com/blog/i-did-something-cool";
-        String shortUrl = urlShortenerService.shortenUrl(longUrl);
+        UrlMappingDTO result = urlShortenerService.shortenUrl("http://example.com/long-url");
 
-        assertNotNull(shortUrl);
-        assertTrue(shortUrl.startsWith("http://localhost:8080/"));
-
-        // Update this assertion to match the new format
-        assertTrue(shortUrl.endsWith("/" + urlShortenerService.generateShortUrl(longUrl)));
-
-        String expandedUrl = urlShortenerService.expandUrl(shortUrl);
-        assertEquals(longUrl, expandedUrl);
+        // Assertions
+        assertNotNull(result);
+        assertEquals("http://example.com/a0a0f5", result.getShortUrl());
     }
-
 
     @Test
-    void testShortenUrlDuplicate() {
-        // Mock the applicationConfiguration to return a base URL
-        when(applicationConfiguration.getBaseUrl()).thenReturn("http://localhost:8080");
+    void testShortenUrlExistingMapping() {
+        when(applicationConfiguration.getBaseUrl()).thenReturn("http://example.com/");
 
-        String longUrl = "https://www.example.com/blog/i-did-something-cool";
+        UrlMapping existingMapping = new UrlMapping();
+        existingMapping.setShortUrl("http://example.com/existing-short-url");
 
-        String shortUrl1 = urlShortenerService.shortenUrl(longUrl);
-        String shortUrl2 = urlShortenerService.shortenUrl(longUrl);
+        // Mock the behavior of urlMappingRepository to return the existing mapping
+        when(urlMappingRepository.findByOriginalUrl(any())).thenReturn(existingMapping);
 
-        // Both short URLs should be the same since it's a duplicate long URL
-        assertEquals(shortUrl1, shortUrl2);
+        UrlMappingDTO result = urlShortenerService.shortenUrl("http://example.com/long-url");
+
+        // Assertions
+        assertNotNull(result);
+        assertEquals("http://example.com/existing-short-url", result.getShortUrl());
     }
+
+    @Test
+    void testExpandUrlSuccess() {
+        UrlMapping sampleMapping = new UrlMapping();
+        sampleMapping.setShortUrl("http://example.com/short-url");
+        sampleMapping.setOriginalUrl("http://example.com/long-url");
+
+        when(urlMappingRepository.findByShortUrl(any())).thenReturn(Optional.of(sampleMapping));
+
+        UrlMappingDTO result = urlShortenerService.expandUrl("http://example.com/short-url");
+
+        // Assertions
+        assertNotNull(result);
+        assertEquals("http://example.com/long-url", result.getLongUrl());
+    }
+
 
     @Test
     void testExpandUrlNotFound() {
-        String shortUrl = "http://localhost:8080/notfound";
+        when(urlMappingRepository.findByShortUrl(any())).thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class, () -> urlShortenerService.expandUrl(shortUrl));
+        // Assertions
+        assertThrows(IllegalArgumentException.class, () -> {
+            urlShortenerService.expandUrl("http://example.com/non-existing-short-url");
+        });
+    }
+
+    @Test
+    void testShortenUrlInvalidUrl() {
+        // service method with an invalid URL
+        assertThrows(InvalidURLException.class, () -> {
+            urlShortenerService.shortenUrl("invalid-url");
+        });
+    }
+
+    @Test
+    void testExpandUrlInvalidUrl() {
+        // service method with an invalid URL
+        assertThrows(InvalidURLException.class, () -> {
+            urlShortenerService.expandUrl("invalid-url");
+        });
     }
 }

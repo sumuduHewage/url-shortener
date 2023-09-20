@@ -1,5 +1,7 @@
 package org.shortner.service;
 
+import org.shortner.model.UrlMappingDTO;
+
 public interface UrlShortenerService {
     /**
      * to shorten URL using long URL
@@ -7,7 +9,7 @@ public interface UrlShortenerService {
      * @param longUrl longURL
      * @return  shorten URL
      */
-    String shortenUrl(String longUrl);
+    UrlMappingDTO shortenUrl(String longUrl);
 
     /**
      * to expand URL using shorten URL
@@ -16,5 +18,5 @@ public interface UrlShortenerService {
      * @return  expand URL
      */
 
-    String expandUrl(String shortUrl);
+    UrlMappingDTO expandUrl(String shortUrl);
 }
