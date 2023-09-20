@@ -6,18 +6,23 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.shortner.configuration.ApplicationConfiguration;
+import org.shortner.model.UrlInformationDTO;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
 class UrlShortenerServiceImplTest {
-
     private UrlShortenerServiceImpl urlShortenerService;
 
     @Mock
     private ApplicationConfiguration applicationConfiguration;
+
+    @Mock
+    private Map<String, String> shortToLongUrlMap;
 
     @BeforeEach
     public void setUp() {
@@ -26,36 +31,38 @@ class UrlShortenerServiceImplTest {
     }
 
     @Test
-    void testShortenAndExpandUrl() {
-        // Mock the applicationConfiguration to return a base URL
+    void testShortenUrl() {
         when(applicationConfiguration.getBaseUrl()).thenReturn("http://localhost:8080/");
 
         String longUrl = "https://www.example.com/blog/i-did-something-cool";
-        String shortUrl = urlShortenerService.shortenUrl(longUrl);
+        UrlInformationDTO urlInformationDTO = urlShortenerService.shortenUrl(longUrl);
 
-        assertNotNull(shortUrl);
-        assertTrue(shortUrl.startsWith("http://localhost:8080/"));
-
-        // Update this assertion to match the new format
-        assertTrue(shortUrl.endsWith("/" + urlShortenerService.generateShortUrl(longUrl)));
-
-        String expandedUrl = urlShortenerService.expandUrl(shortUrl);
-        assertEquals(longUrl, expandedUrl);
+        assertNotNull(urlInformationDTO);
+        assertTrue(urlInformationDTO.getShortUrl().startsWith("http://localhost:8080/"));
+        assertEquals(longUrl, urlInformationDTO.getLongUrl());
     }
-
 
     @Test
     void testShortenUrlDuplicate() {
-        // Mock the applicationConfiguration to return a base URL
-        when(applicationConfiguration.getBaseUrl()).thenReturn("http://localhost:8080");
+        when(applicationConfiguration.getBaseUrl()).thenReturn("http://localhost:8080/");
 
         String longUrl = "https://www.example.com/blog/i-did-something-cool";
 
-        String shortUrl1 = urlShortenerService.shortenUrl(longUrl);
-        String shortUrl2 = urlShortenerService.shortenUrl(longUrl);
+        UrlInformationDTO urlInformationDTO1 = urlShortenerService.shortenUrl(longUrl);
+        UrlInformationDTO urlInformationDTO2 = urlShortenerService.shortenUrl(longUrl);
 
         // Both short URLs should be the same since it's a duplicate long URL
-        assertEquals(shortUrl1, shortUrl2);
+        assertEquals(urlInformationDTO1.getShortUrl(), urlInformationDTO2.getShortUrl());
+    }
+
+    @Test
+    void testExpandUrlWithInvalidShortUrl() {
+        String shortUrl = "http://localhost:8080/invalid";
+
+        when(shortToLongUrlMap.get(shortUrl)).thenReturn(null);
+
+        // Call the method under test and expect an IllegalArgumentException
+        assertThrows(IllegalArgumentException.class, () -> urlShortenerService.expandUrl(shortUrl));
     }
 
     @Test

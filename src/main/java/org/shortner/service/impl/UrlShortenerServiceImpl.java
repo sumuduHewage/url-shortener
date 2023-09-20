@@ -2,6 +2,7 @@ package org.shortner.service.impl;
 
 import org.shortner.configuration.ApplicationConfiguration;
 import org.shortner.exception.HashingAlgorithmException;
+import org.shortner.model.UrlInformationDTO;
 import org.shortner.service.UrlShortenerService;
 import org.shortner.util.CommonConstants;
 import org.slf4j.Logger;
@@ -24,10 +25,13 @@ public class UrlShortenerServiceImpl implements UrlShortenerService {
         this.applicationConfiguration = applicationConfiguration;
     }
 
-    public String shortenUrl(String longUrl) {
+    public UrlInformationDTO shortenUrl(String longUrl) {
+        UrlInformationDTO urlInformationDTO = new UrlInformationDTO();
+        urlInformationDTO.setLongUrl(longUrl);
 
         if (shortToLongUrlMap.containsValue(longUrl)) {
-            return longToShortUrlMap.get(longUrl);
+            urlInformationDTO.setShortUrl(longToShortUrlMap.get(longUrl));
+            return urlInformationDTO;
         }
 
         String shortUrl = applicationConfiguration.getBaseUrl() + generateShortUrl(longUrl);
@@ -35,15 +39,19 @@ public class UrlShortenerServiceImpl implements UrlShortenerService {
         longToShortUrlMap.put(longUrl, shortUrl);
         logger.info("shorten url : {}", shortUrl);
 
-        return shortUrl;
+        urlInformationDTO.setShortUrl(shortUrl);
+        return urlInformationDTO;
     }
 
-    public String expandUrl(String shortUrl) {
+    public UrlInformationDTO expandUrl(String shortUrl) {
         String longUrl = shortToLongUrlMap.get(shortUrl);
+        UrlInformationDTO urlInformationDTO = new UrlInformationDTO();
+        urlInformationDTO.setShortUrl(shortUrl);
 
         if (longUrl != null) {
+            urlInformationDTO.setLongUrl(longUrl);
             logger.info("long url : {}", longUrl);
-            return longUrl;
+            return urlInformationDTO;
         } else {
             logger.debug(CommonConstants.URL_NOT_FOUND);
             throw new IllegalArgumentException(CommonConstants.URL_NOT_FOUND);
