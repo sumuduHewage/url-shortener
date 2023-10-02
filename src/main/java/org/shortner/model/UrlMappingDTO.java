@@ -1,6 +1,6 @@
 package org.shortner.model;
 
-public class UrlInformationDTO {
+public class UrlMappingDTO {
     private String longUrl;
     private String shortUrl;
 
