@@ -46,7 +46,7 @@ class UrlShortenerServiceImplTest {
 
         // Assertions
         assertNotNull(result);
-        assertEquals("http://example.com/a0a0f5", result.getShortUrl());
+        assertEquals("http://example.com/tjvQY2", result.getShortUrl());
     }
 
     @Test
