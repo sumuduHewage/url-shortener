@@ -17,6 +17,9 @@ import org.springframework.stereotype.Service;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
+import java.util.zip.Adler32;
+
+import static org.shortner.util.CommonConstants.BASE62_CHARS;
 
 @Service
 public class UrlShortenerServiceImpl implements UrlShortenerService {
@@ -97,7 +100,7 @@ public class UrlShortenerServiceImpl implements UrlShortenerService {
         }
     }
 
-    synchronized String generateShortUrl(String longUrl) {
+    /*synchronized String generateShortUrl(String longUrl) {
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
             md.update(longUrl.getBytes());
@@ -112,5 +115,21 @@ public class UrlShortenerServiceImpl implements UrlShortenerService {
         } catch (NoSuchAlgorithmException e) {
             throw new HashingAlgorithmException(CommonConstants.HASHING_ALGORITHM_NOT_FOUND, e);
         }
+    }*/
+
+    private String generateShortUrl(String longUrl) {
+        Adler32 adler32 = new Adler32();
+        adler32.update(longUrl.getBytes());
+        long hash = adler32.getValue();
+
+        StringBuilder shortUrl = new StringBuilder();
+        int base = BASE62_CHARS.length();
+        while (hash > 0 && shortUrl.length() < 6) {
+            int index = (int) (hash % base);
+            shortUrl.append(BASE62_CHARS.charAt(index));
+            hash /= base;
+        }
+
+        return shortUrl.toString();
     }
 }
